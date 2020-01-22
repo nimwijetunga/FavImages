@@ -70,6 +70,10 @@ class ImagesSave(Resource):
 		image_handler.add_favourite_images(user_id, [image_id])
 		return make_response(jsonify(message='Success'))
 
+	@authenticate_request
+	def get(user_id, self):
+		return make_response(jsonify(images=image_handler.get_favourite_images(user_id)))
+
 @images.route("/images")
 class Images(Resource):
 	image_objects = api.schema_model('image_objs', {

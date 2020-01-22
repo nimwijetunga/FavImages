@@ -51,6 +51,12 @@ def get_image_details(image_id):
 	images_redis.set(cache_key, json.dumps(image_obj))
 	return image_obj
 
+def get_favourite_images(user_id):
+	user = models.User.query.get(user_id)
+	if not user:
+		raise Exception('Could not find user with id: %s' % user_id)
+	return list(user.images)
+
 def add_favourite_images(user_id, image_ids):
 	user = models.User.query.get(user_id)
 	if not user:
