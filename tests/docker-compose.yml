@@ -1,0 +1,49 @@
+version: '2'
+services:
+  integration-tester:
+    build: .
+    links:
+      # - app
+      - redis
+      - postgres
+    environment:
+      - ENV=test
+    entrypoint: ["python", "test_app.py"]
+  redis:
+    image: redis:3.0-alpine
+    command: redis-server
+    volumes:
+      - /var/lib/redis/data
+    ports:
+      - 6380:6380
+  postgres:
+    restart: always
+    image: postgres:10
+    volumes:
+      - /var/lib/postgresql/data
+    ports:
+      - 5477:5477
+    environment:
+    - POSTGRES_USER=postgres
+    - POSTGRES_PASSWORD=password
+    - POSTGRES_DB=present_easy
+  # app:
+  #   image: present_easy
+  #   restart: always
+  #   build: ../
+  #   environment:
+  #     - POSTGRES_USER=postgres
+  #     - POSTGRES_PASSWORD=password
+  #     - POSTGRES_DB=present_easy
+  #     - HOST=postgres
+  #     - PORT=5432
+  #     - APP_SETTINGS=config.DevelopmentConfig
+  #     - APP_PORT=3000
+  #     - SECRET_KEY=secret
+  #     - REDIS_HOST=redis
+  #     - REDIS_PORT=6379
+  #   ports:
+  #     - 80:80
+  #   volumes:
+  #     - .:/app
+  #   entrypoint: ["python", "app.py"]
