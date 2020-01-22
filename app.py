@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 import os
 import util
 import image_handler
+import elasticsearch_helper as eh
 from util import authenticate_request
 from flask_restplus import Api, Resource, fields
 
@@ -17,6 +18,35 @@ login_auth = api.namespace('login', description='Authentication API\'s')
 images = api.namespace('images', description='Image Saving/Retrieval API\'s')
 
 import models
+
+@images.route("/images/search")
+class ImagesSearchTitle(Resource):
+	@api.doc(params={'title': 'Title to be Searched', 'description': 'Description to be Searched'})
+	@authenticate_request
+	def get(user_id, self):
+		title = request.args.get('title')
+		description = request.args.get('description')
+		if not title and not description:
+			return make_response(jsonify(error='Please provide a title or description'), 400)
+		if title and description:
+			return make_response(jsonify(error='Please only provide a title OR description'), 400)
+		suggestions = []
+		if title:
+			suggestions = eh.query_title('images', title)
+		else:
+			suggestions = eh.query_description('images', description) if description else []
+		return make_response(jsonify(suggestions=suggestions))
+
+@images.route("/images/details")
+class ImagesSearchTitle(Resource):
+	@api.doc(params={'image_id': 'Image ID'})
+	@authenticate_request
+	def get(user_id, self):
+		image_id = int(request.args.get('image_id'))
+		if not image_id:
+			return make_response(jsonify(error='Please provide an image id'), 400)
+		image_details = image_handler.get_image_details(image_id)
+		return make_response(jsonify(image_details=image_details))
 
 @images.route("/images")
 class Images(Resource):
