@@ -48,6 +48,28 @@ class ImagesSearchTitle(Resource):
 		image_details = image_handler.get_image_details(image_id)
 		return make_response(jsonify(image_details=image_details))
 
+@images.route("/images/favourite")
+class ImagesSave(Resource):
+
+	expected = api.schema_model('image_id', {
+	    'properties': {
+	        'image_id': {
+	            'type': 'integer'
+	        },
+	    },
+	    'type': 'object'
+	})
+
+	@images.expect(expected)
+	@authenticate_request
+	def post(user_id, self):
+		body = request.get_json() or {}
+		image_id = body.get('image_id')
+		if not image_id:
+			return make_response(jsonify(error='Please provide image ids to save'), 400) 			
+		image_handler.add_favourite_images(user_id, [image_id])
+		return make_response(jsonify(message='Success'))
+
 @images.route("/images")
 class Images(Resource):
 	@api.doc(params={'text': 'Text to be sentiment analyzed'})

@@ -51,41 +51,21 @@ def get_image_details(image_id):
 	images_redis.set(cache_key, json.dumps(image_obj))
 	return image_obj
 
-# def get_existing_images(score):
-# 	score_key = 'score:%s' % score
-# 	return images_redis.lrange(score_key, 0, -1)
-
-# def fetch_images_from_redis_add_to_db(user, image_uuids):
-# 	try:
-# 		saved_image_ids = set(user.images or [])
-# 		for uuid in image_uuids:
-# 			key = 'image:%s' % uuid
-# 			image_data = images_redis.get(key)
-# 			if not image_data:
-# 				raise Exception('Could Not Find Image in Cache')
-# 			image_data = json.loads(image_data)
-# 			image = models.Image(**image_data)
-# 			saved_image = db.session.query(models.Image).filter_by(url=image.url,
-# 																   width=image.width,
-# 																   height=image.height,
-# 																   score=image.score).first()
-# 			if saved_image:
-# 				saved_image_ids.add(saved_image.id)
-# 				continue
-# 			db.session.add(image)
-# 			db.session.flush()
-# 			saved_image_ids.add(image.id)
-# 		saved_image_ids = list(saved_image_ids)
-# 		user.images = saved_image_ids
-# 		db.session.add(user)
-# 		db.session.commit()
-# 	except Exception as e:
-# 		db.session.rollback()
-# 		raise Exception(str(e))
-
-
-
-
-
-
-
+def add_favourite_images(user_id, image_ids):
+	user = models.User.query.get(user_id)
+	if not user:
+		raise Exception('Could not find user with id: %s' % user_id)
+	image_ids = db.session.query(models.Image.id).filter(models.Image.id.in_(image_ids)).all()
+	print('IDS', image_ids)
+	images = set(user.images or [])
+	for image_id in image_ids:
+		if image_id not in images:
+			images.add(image_id[0])
+	try:
+		print(list(images))
+		user.images = list(images)	
+		db.session.add(user)
+		db.session.commit()
+	except Exception as e:
+		db.session.rollback()
+		raise Exception('Could not save images for user: %s' % user_id)
