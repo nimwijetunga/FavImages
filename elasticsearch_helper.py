@@ -44,8 +44,8 @@ def create_index(index_name='images'):
 
 def store_record(index_name, record):
 	create_index()
-    try:
-        outcome = es_object.index(index=index_name, doc_type='members', body=record)
-    except Exception as ex:
-        print('Error in indexing data')
-        print(str(ex))
+	try:
+	    outcome = es_object.index(index=index_name, doc_type='members', body=record)
+	except Exception as ex:
+	    print('Error in indexing data')
+	    print(str(ex))
