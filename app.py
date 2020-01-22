@@ -72,12 +72,6 @@ class ImagesSave(Resource):
 
 @images.route("/images")
 class Images(Resource):
-	@api.doc(params={'text': 'Text to be sentiment analyzed'})
-	@authenticate_request
-	def get(user_id, self):
-		image_ids = image_handler.create_image_and_add_to_cache('test_url', 100, 300, 1)
-		return jsonify({'status': 'Success', 'image_ids': image_ids})
-
 	image_objects = api.schema_model('image_objs', {
 	    'properties': {
 	        'title': {
