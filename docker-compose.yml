@@ -33,42 +33,42 @@ services:
         hard: -1
     ports:
       - "9200:9200"
-    volumes:
-      - esdata1:/usr/share/elasticsearch/data
-    networks:
-      - esnet
+    # volumes:
+    #   - esdata1:/usr/share/elasticsearch/data
+    # networks:
+    #   - esnet
 
-  elasticsearch2:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.3.2
-    container_name: elasticsearch2
-    environment:
-      - cluster.name=docker-cluster
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - esdata2:/usr/share/elasticsearch/data
-    networks:
-      - esnet
+  # elasticsearch2:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:6.3.2
+  #   container_name: elasticsearch2
+  #   environment:
+  #     - cluster.name=docker-cluster
+  #     - bootstrap.memory_lock=true
+  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+  #   ulimits:
+  #     memlock:
+  #       soft: -1
+  #       hard: -1
+  #   volumes:
+  #     - esdata2:/usr/share/elasticsearch/data
+  #   networks:
+  #     - esnet
 
-  elasticsearch3:
-    image: docker.elastic.co/elasticsearch/elasticsearch:6.3.2
-    container_name: elasticsearch3
-    environment:
-      - cluster.name=docker-cluster
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - esdata3:/usr/share/elasticsearch/data
-    networks:
-      - esnet
+  # elasticsearch3:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:6.3.2
+  #   container_name: elasticsearch3
+  #   environment:
+  #     - cluster.name=docker-cluster
+  #     - bootstrap.memory_lock=true
+  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+  #   ulimits:
+  #     memlock:
+  #       soft: -1
+  #       hard: -1
+  #   volumes:
+  #     - esdata3:/usr/share/elasticsearch/data
+  #   networks:
+  #     - esnet
 
   zookeeper:
     image: confluentinc/cp-zookeeper:5.1.2
@@ -80,18 +80,21 @@ services:
     image: confluentinc/cp-kafka:5.1.2
     depends_on:
       - zookeeper
+    restart: always
     ports:
       - 9092:9092
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      # KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
 
   schema-registry:
     image: confluentinc/cp-schema-registry:5.1.2
     hostname: schema-registry
+    restart: always
     ports:
       - 8081:8081
     depends_on:
@@ -120,6 +123,34 @@ services:
         CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
         CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
 
+  app:
+    image: present_easy
+    restart: always
+    build: .
+    volumes:
+      - ./:/app
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=present_easy
+      - HOST=postgres
+      - PORT=5432
+      - APP_SETTINGS=config.DevelopmentConfig
+      - APP_PORT=3000
+      - SECRET_KEY=secret
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - ES_HOST=elasticsearch
+      - ES_PORT=9200
+      - KAFKA_HOST=kafka
+      - SCHEMA_HOST=schema-registry
+      - KAFKA_PORT=9092
+      - SCHEMA_PORT=8081
+      - APP_PORT=5000
+    ports:
+      - 5000:5000
+    entrypoint: ["python", "app.py"]
+
 volumes:
   esdata1:
     driver: local
@@ -131,30 +162,3 @@ volumes:
 networks:
   esnet:
     driver: bridge
-
-  # kibana:
-  #   image: docker.elastic.co/kibana/kibana:6.3.2
-  #   ports:
-  #     - "5601:5601"
-  # app:
-  #   image: present_easy
-  #   restart: always
-  #   build: .
-  #   volumes:
-  #     - ./:/app
-  #   environment:
-  #     - POSTGRES_USER=postgres
-  #     - POSTGRES_PASSWORD=password
-  #     - POSTGRES_DB=present_easy
-  #     - HOST=postgres
-  #     - PORT=5432
-  #     - APP_SETTINGS=config.DevelopmentConfig
-  #     - APP_PORT=3000
-  #     - SECRET_KEY=secret
-  #     - REDIS_HOST=redis
-  #     - REDIS_PORT=6379
-  #     - ES_HOST=elasticsearch
-  #     - ES_PORT=9200
-  #   ports:
-  #     - 80:80
-  #   entrypoint: ["python", "app.py"]

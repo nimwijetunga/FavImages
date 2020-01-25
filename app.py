@@ -161,8 +161,8 @@ class Login(Resource):
 			auth_token = util.encode_auth_token(user_id)
 			return util.get_response_with_cookie({'status': 'Success', 'token': auth_token}, 'auth_token', auth_token)
 		except Exception as e:
-			return make_response(jsonify(status='Failed', token=None), 500)
+			return make_response(jsonify(status='Failed', token=None, error=str(e)), 500)
 
 if __name__ == '__main__':
 	print('Starting App!')
-	app.run(host='0.0.0.0', port=8080)
+	app.run(host='0.0.0.0', port=os.getenv('APP_PORT'))

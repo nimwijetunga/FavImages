@@ -4,9 +4,6 @@ import os
 es_object = None
 es_object = Elasticsearch([{'host': os.getenv('ES_HOST'), 'port': os.getenv('ES_PORT')}])
 
-if not es_object.ping():
-    raise Exception('Could not connect to ES cluster!')
-
 def create_index(index_name='images'):
     created = False
     # index settings
