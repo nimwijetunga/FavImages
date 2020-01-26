@@ -4,6 +4,7 @@ import os
 import util
 import image_handler
 import elasticsearch_helper as eh
+import avro_producer as ap
 from util import authenticate_request
 from flask_restplus import Api, Resource, fields
 
@@ -132,6 +133,16 @@ class SignUp(Resource):
 			user = models.User(user_id=user_id, password=password, email=email)
 			db.session.add(user)
 			db.session.commit()
+			user_key_dict = {
+				'user_id': user_id
+			}
+			user_value_dict = {
+				'user_id': user_id,
+				'password': password,
+				'email': email or '',
+				'images': []
+			}
+			ap.users_produce_to_kafka(user_key_dict, user_value_dict)
 			return util.get_response_with_cookie({'status': 'Success', 'token': auth_token}, 'auth_token', auth_token)
 		except Exception as e:
 			db.session.rollback()
