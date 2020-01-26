@@ -20,6 +20,19 @@ services:
     - POSTGRES_PASSWORD=password
     - POSTGRES_DB=present_easy
 
+  postgres-backup:
+    restart: always
+    image: debezium/postgres:10
+    environment:
+    - POSTGRES_USER=postgres
+    - POSTGRES_PASSWORD=password
+    - POSTGRES_DB=present_easy
+    command: postgres -c config_file=/home/config/postgresql.conf
+    ports:
+      - 5532:5532
+    volumes:
+      - $PWD:/home/config
+
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:6.3.2
     container_name: elasticsearch

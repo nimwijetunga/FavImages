@@ -86,10 +86,10 @@ class Images(Resource):
 	            'type': 'string'
 	        },
 	        'width': {
-	            'type': 'float'
+	            'type': 'int'
 	        },
 	        'height': {
-	            'type': 'float'
+	            'type': 'int'
 	        },
 	        'description': {
 	        	'type': 'string'
@@ -104,6 +104,17 @@ class Images(Resource):
 		image_obj = request.get_json() or {}
 		if not image_obj:
 			return make_response(jsonify(status='Failed'), 400)
+		image_key = {
+			'url': image_obj.get('url') or '',
+		}
+		image_value = {
+			'url': image_obj.get('url') or '',
+			'title': image_obj.get('title'),
+			'description': image_obj.get('description') or '',
+			'width': float(image_obj.get('width')) if image_obj.get('width') else 0.0,
+			'height': float(image_obj.get('height')) if image_obj.get('height') else 0.0
+		}
+		ap.images_produce_to_kafka(image_key, image_value)
 		image_ids = image_handler.create_images_add_to_cache_db_es([image_obj])
 		return make_response(jsonify(image_ids=image_ids))
 
