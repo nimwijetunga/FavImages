@@ -43,7 +43,7 @@ class User(db.Model):
 	user_id = db.Column(db.String(), primary_key=True)
 	password = db.Column(db.String(), nullable=False)
 	email = db.Column(db.String())
-	images = db.Column(ARRAY(db.Integer), default=[])
+	images = db.Column(db.String(), default=json.dumps([]))
 
 	def __init__(self, user_id, password, email):
 		self.user_id = user_id

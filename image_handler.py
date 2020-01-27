@@ -55,21 +55,21 @@ def get_favourite_images(user_id):
 	user = models.User.query.get(user_id)
 	if not user:
 		raise Exception('Could not find user with id: %s' % user_id)
-	return list(user.images)
+	images = user.images or json.dumps([])
+	return list(json.loads(images))
 
 def add_favourite_images(user_id, image_ids):
 	user = models.User.query.get(user_id)
 	if not user:
 		raise Exception('Could not find user with id: %s' % user_id)
 	image_ids = db.session.query(models.Image.id).filter(models.Image.id.in_(image_ids)).all()
-	print('IDS', image_ids)
-	images = set(user.images or [])
+	images = user.images or json.dumps([])
+	images = set(json.loads(user.images))
 	for image_id in image_ids:
 		if image_id not in images:
 			images.add(image_id[0])
 	try:
-		print(list(images))
-		user.images = list(images)	
+		user.images = json.dumps(list(images))	
 		db.session.add(user)
 		db.session.commit()
 	except Exception as e:

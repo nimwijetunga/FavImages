@@ -1,10 +1,11 @@
 from flask import Flask, request, jsonify, make_response
 from flask_sqlalchemy import SQLAlchemy
+import simplejson as json
 import os
 import util
-import image_handler
-import elasticsearch_helper as eh
-import avro_producer as ap
+# import image_handler
+# import elasticsearch_helper as eh
+# import avro_producer as ap
 from util import authenticate_request
 from flask_restplus import Api, Resource, fields
 
@@ -104,10 +105,12 @@ class Images(Resource):
 		image_obj = request.get_json() or {}
 		if not image_obj:
 			return make_response(jsonify(status='Failed'), 400)
+		image_ids = image_handler.create_images_add_to_cache_db_es([image_obj])
 		image_key = {
-			'url': image_obj.get('url') or '',
+			'id': image_ids[0]
 		}
 		image_value = {
+			'id': image_ids[0],
 			'url': image_obj.get('url') or '',
 			'title': image_obj.get('title'),
 			'description': image_obj.get('description') or '',
@@ -115,7 +118,6 @@ class Images(Resource):
 			'height': float(image_obj.get('height')) if image_obj.get('height') else 0.0
 		}
 		ap.images_produce_to_kafka(image_key, image_value)
-		image_ids = image_handler.create_images_add_to_cache_db_es([image_obj])
 		return make_response(jsonify(image_ids=image_ids))
 
 @login_auth.route("/signup")
@@ -151,7 +153,7 @@ class SignUp(Resource):
 				'user_id': user_id,
 				'password': password,
 				'email': email or '',
-				'images': []
+				'images': json.dumps([])
 			}
 			ap.users_produce_to_kafka(user_key_dict, user_value_dict)
 			return util.get_response_with_cookie({'status': 'Success', 'token': auth_token}, 'auth_token', auth_token)

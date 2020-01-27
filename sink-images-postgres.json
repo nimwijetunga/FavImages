@@ -12,7 +12,8 @@
         "insert.mode": "upsert",
         "auto.create": true,
         "auto.evolve": true,
-        "topics": "images",
-        "pk.mode": "record_key"
+        "topics": "images_topic",
+        "pk.mode": "record_key",
+        "table.name.format": "images"
     }
 }

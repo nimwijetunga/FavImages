@@ -12,7 +12,8 @@
         "insert.mode": "upsert",
         "auto.create": true,
         "auto.evolve": true,
-        "topics": "users_vx",
-        "pk.mode": "record_key"
+        "topics": "users_topic",
+        "pk.mode": "record_key",
+        "table.name.format": "users"
     }
 }
