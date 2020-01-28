@@ -28,9 +28,8 @@ class CustomAPI(Api):
         return url_for(self.endpoint('specs'), _external=False)
 
 # api = Api(app=app)
-api = CustomAPI(app=app, title='My Flask API',
-                version='1.0',
-                description='My Flask API Project')
+api = CustomAPI(app=app, title='FavImages',
+                version='1.0')
 
 login_auth = api.namespace('login', description='Authentication API\'s')
 images = api.namespace('images', description='Image Saving/Retrieval API\'s')
