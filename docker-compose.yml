@@ -135,6 +135,15 @@ services:
         CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
         CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
 
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - app
+    ports:
+      - "4000:4000"
+
   app:
     image: present_easy
     restart: always
@@ -160,7 +169,7 @@ services:
       - SCHEMA_PORT=8081
       - APP_PORT=5000
     ports:
-      - 5000:5000
+      - "5000"
     entrypoint: ["python", "app.py"]
 
 volumes:

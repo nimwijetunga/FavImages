@@ -1,11 +1,11 @@
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, request, jsonify, make_response, url_for
 from flask_sqlalchemy import SQLAlchemy
 import simplejson as json
 import os
 import util
-# import image_handler
-# import elasticsearch_helper as eh
-# import avro_producer as ap
+import image_handler
+import elasticsearch_helper as eh
+import avro_producer as ap
 from util import authenticate_request
 from flask_restplus import Api, Resource, fields
 
@@ -14,12 +14,41 @@ app = Flask(__name__)
 app.config.from_object(os.environ['APP_SETTINGS'])
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
-api = Api(app=app)
+
+# DOCS_ROUTES = Blueprint('swagger', __name__)
+
+class CustomAPI(Api):
+    @property
+    def specs_url(self):
+        '''
+        The Swagger specifications absolute url (ie. `swagger.json`)
+
+        :rtype: str
+        '''
+        return url_for(self.endpoint('specs'), _external=False)
+
+# api = Api(app=app)
+api = CustomAPI(app=app, title='My Flask API',
+                version='1.0',
+                description='My Flask API Project')
 
 login_auth = api.namespace('login', description='Authentication API\'s')
 images = api.namespace('images', description='Image Saving/Retrieval API\'s')
 
 import models
+
+@property
+def specs_url(self):
+	'''
+	The Swagger specifications absolute url (ie. `swagger.json`)
+
+	:rtype: str
+	'''
+	url = url_for(self.endpoint('specs'), _external=True)
+	if self.app.config.get('SWAGGER_BASEPATH', ''):
+	    prefix = url.split('/swagger.json')[0]
+	    url = prefix + self.app.config.get('SWAGGER_BASEPATH', '') + '/swagger.json'
+	return url
 
 @images.route("/images/search")
 class ImagesSearchTitle(Resource):
@@ -129,37 +158,37 @@ class SignUp(Resource):
     })
 	@login_auth.expect(signup_request)
 	def post(self):
-		try:
-			body = request.get_json()
-			if not body:
-				return make_response(jsonify(status='Failed', token=None), 400)
-			user_id = body.get('username')
-			password = body.get('password')
-			email = body.get('email')
-			if not user_id or not password:
-				return make_response(jsonify(status='Failed', token=None), 400)
-			user_exists = bool(db.session.query(models.User).filter_by(user_id=user_id).first())
-			if user_exists:
-				return make_response(jsonify(status='Failed', token=None, msg='User Already Exists!'), 400)
-			password = util.encrypt_password(password)
-			auth_token = util.encode_auth_token(user_id)
-			user = models.User(user_id=user_id, password=password, email=email)
-			db.session.add(user)
-			db.session.commit()
-			user_key_dict = {
-				'user_id': user_id
-			}
-			user_value_dict = {
-				'user_id': user_id,
-				'password': password,
-				'email': email or '',
-				'images': json.dumps([])
-			}
-			ap.users_produce_to_kafka(user_key_dict, user_value_dict)
-			return util.get_response_with_cookie({'status': 'Success', 'token': auth_token}, 'auth_token', auth_token)
-		except Exception as e:
-			db.session.rollback()
-			return make_response(jsonify(status='Failed', token=None), 500)
+		# try:
+		body = request.get_json()
+		if not body:
+			return make_response(jsonify(status='Failed', token=None), 400)
+		user_id = body.get('username')
+		password = body.get('password')
+		email = body.get('email')
+		if not user_id or not password:
+			return make_response(jsonify(status='Failed', token=None), 400)
+		user_exists = bool(db.session.query(models.User).filter_by(user_id=user_id).first())
+		if user_exists:
+			return make_response(jsonify(status='Failed', token=None, msg='User Already Exists!'), 400)
+		password = util.encrypt_password(password)
+		auth_token = util.encode_auth_token(user_id)
+		user = models.User(user_id=user_id, password=password, email=email)
+		db.session.add(user)
+		db.session.commit()
+		user_key_dict = {
+			'user_id': user_id
+		}
+		user_value_dict = {
+			'user_id': user_id,
+			'password': password,
+			'email': email or '',
+			'images': json.dumps([])
+		}
+		ap.users_produce_to_kafka(user_key_dict, user_value_dict)
+		return util.get_response_with_cookie({'status': 'Success', 'token': auth_token}, 'auth_token', auth_token)
+		# except Exception as e:
+		# 	db.session.rollback()
+		# 	return make_response(jsonify(status='Failed', token=None), 500)
 
 @login_auth.route('/login')
 class Login(Resource):

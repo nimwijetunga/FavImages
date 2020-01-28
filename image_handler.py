@@ -3,6 +3,7 @@ import simplejson as json
 from app import db
 import elasticsearch_helper as eh
 import redis
+import avro_producer as ap
 import os
 
 _IMAGES_REDIS_DB_NUM = 0
@@ -63,8 +64,10 @@ def add_favourite_images(user_id, image_ids):
 	if not user:
 		raise Exception('Could not find user with id: %s' % user_id)
 	image_ids = db.session.query(models.Image.id).filter(models.Image.id.in_(image_ids)).all()
-	images = user.images or json.dumps([])
-	images = set(json.loads(user.images))
+	try:
+		images = set(json.loads(user.images))
+	except Exception as e:
+		images = set([])
 	for image_id in image_ids:
 		if image_id not in images:
 			images.add(image_id[0])
@@ -75,3 +78,13 @@ def add_favourite_images(user_id, image_ids):
 	except Exception as e:
 		db.session.rollback()
 		raise Exception('Could not save images for user: %s' % user_id)
+	key_dict = {
+		'user_id': user_id
+    }
+	value_dict = {
+		'user_id': user_id,
+		'password': user.password,
+		'images': user.images,
+		'email': user.email or ''
+	}
+	ap.users_produce_to_kafka(key_dict, value_dict)
