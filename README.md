@@ -2,7 +2,7 @@
 
 ## Hosted
 
-google.com
+http://18.224.94.69:4000/
 
 ## Descrption
 
@@ -29,4 +29,4 @@ Application that allows users to create a repository of their favourite images
 
  - `bash startup_setup.sh`
  - `bash unlock_es.sh`
- - If first time then you will need to run `python manage.py` inside the app container
+ - If first time then you will need to run `bash migrate.sh` inside the app container
