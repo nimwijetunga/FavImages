@@ -3,6 +3,7 @@ import os
 
 es_object = None
 es_object = Elasticsearch([{'host': os.getenv('ES_HOST'), 'port': os.getenv('ES_PORT')}])
+print("ES Cluster: %s", es_object)
 
 def create_index(index_name='images'):
     created = False
