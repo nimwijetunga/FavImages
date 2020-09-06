@@ -23,5 +23,10 @@ Application that allows users to create a repository of their favourite images
  - Scalable <b> ElasticSearch cluster </b> to search image titles/descriptions
  - <b> Redis caching layer </b> which sits infront of a PostgresDB allowing for low latency data reterival
  - <b> Kafka queue </b> which has a python producer and will write to the Elasticsearch consumer
+ - Robust <b> Docker containerization </b>
 
 ## Running Locally
+
+ - `bash startup_setup.sh`
+ - `bash unlock_es.sh`
+ - If first time then you will need to run `python manage.py` inside the app container
