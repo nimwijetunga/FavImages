@@ -5,7 +5,7 @@ import os
 import util
 import image_handler
 import elasticsearch_helper as eh
-import avro_producer as ap
+# import avro_producer as ap
 from util import authenticate_request
 from flask_restplus import Api, Resource, fields
 
@@ -145,7 +145,7 @@ class Images(Resource):
 			'width': float(image_obj.get('width')) if image_obj.get('width') else 0.0,
 			'height': float(image_obj.get('height')) if image_obj.get('height') else 0.0
 		}
-		ap.images_produce_to_kafka(image_key, image_value)
+		# ap.images_produce_to_kafka(image_key, image_value)
 		return make_response(jsonify(image_ids=image_ids))
 
 @login_auth.route("/signup")
@@ -183,7 +183,7 @@ class SignUp(Resource):
 			'email': email or '',
 			'images': json.dumps([])
 		}
-		ap.users_produce_to_kafka(user_key_dict, user_value_dict)
+		# ap.users_produce_to_kafka(user_key_dict, user_value_dict)
 		return util.get_response_with_cookie({'status': 'Success', 'token': auth_token}, 'auth_token', auth_token)
 		# except Exception as e:
 		# 	db.session.rollback()

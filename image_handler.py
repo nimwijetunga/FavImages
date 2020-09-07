@@ -3,7 +3,7 @@ import simplejson as json
 from app import db
 import elasticsearch_helper as eh
 import redis
-import avro_producer as ap
+# import avro_producer as ap
 import os
 
 _IMAGES_REDIS_DB_NUM = 0
@@ -87,4 +87,4 @@ def add_favourite_images(user_id, image_ids):
 		'images': user.images,
 		'email': user.email or ''
 	}
-	ap.users_produce_to_kafka(key_dict, value_dict)
+	# ap.users_produce_to_kafka(key_dict, value_dict)
