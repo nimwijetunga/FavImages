@@ -48,3 +48,4 @@ typing==3.5.3.0
 urllib3==1.25.8
 Werkzeug==0.15.4
 zipp==1.0.0
+boto==2.49.0

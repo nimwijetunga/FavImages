@@ -14,13 +14,15 @@ class Image(db.Model):
     height = db.Column(db.Float)
     title = db.Column(db.String())
     description = db.Column(db.String())
+    s3_url = db.Column(db.String())
 
-    def __init__(self, url, title, description='', width='', height=''):
+    def __init__(self, url, title, description='', width='', height='', s3_url=''):
         self.url = url
         self.width = width
         self.height = height
         self.title = title
         self.description = description
+        self.s3_url = s3_url
 
     def add_image_to_cache(self):
     	key = 'image:%s' % self.id
@@ -29,7 +31,8 @@ class Image(db.Model):
     		'width': self.width,
     		'height': self.height,
             'title': self.title,
-            'description': self.description
+            'description': self.description,
+            's3_url': self.s3_url
     	}
     	image_handler.images_redis.set(key, json.dumps(image_info))
     	image_handler.images_redis.expire(key, 60*60) # expire after an hour

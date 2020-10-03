@@ -3,6 +3,7 @@ import simplejson as json
 from app import db
 import elasticsearch_helper as eh
 import redis
+import util
 # import avro_producer as ap
 import os
 
@@ -14,6 +15,8 @@ def create_images_add_to_cache_db_es(image_objs):
 	for image_obj in image_objs:
 		try:
 			image = models.Image(**image_obj)
+			s3_url = util.upload_to_s3(image.title, image.url)
+			image.s3_url = s3_url
 			db.session.add(image)
 			db.session.commit()
 			image.add_image_to_cache()
