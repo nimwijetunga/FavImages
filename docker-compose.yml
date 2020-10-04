@@ -116,6 +116,8 @@ services:
     build: .
     volumes:
       - ./:/app
+    env_file:
+      - .env
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
